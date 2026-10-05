@@ -5,7 +5,7 @@ from flask import Flask, jsonify, render_template
 app = Flask(__name__)
 
 APP_ENV = os.getenv("APP_ENV", "LOCAL")
-APP_VERSION = os.getenv("APP_VERSION", "1.0.0")
+APP_VERSION = os.getenv("APP_VERSION", "2.0.0")
 
 
 warehouses = [
