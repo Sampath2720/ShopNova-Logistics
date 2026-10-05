@@ -11,14 +11,24 @@ pipeline {
         IMAGE_NAME = 'shopnova-logistics'
         IMAGE_TAG = "${BUILD_NUMBER}"
         IMAGE_ARCHIVE = 'shopnova-logistics.tar'
-        KUBE_NAMESPACE = 'uat'
-        KUBE_DEPLOYMENT = 'shopnova-uat'
-        KUBE_CONTAINER = 'shopnova'
-        UAT_PORT = '30071'
+
         KUBECONFIG = '/home/azureuser/.kube/config'
+
+        UAT_NAMESPACE = 'uat'
+        UAT_DEPLOYMENT = 'shopnova-uat'
+        UAT_CONTAINER = 'shopnova'
+        UAT_PORT = '30071'
+
+        PROD_HOST = '172.198.162.209'
+        PROD_USER = 'azureuser'
+        PROD_NAMESPACE = 'prod'
+        PROD_DEPLOYMENT = 'shopnova-prod'
+        PROD_CONTAINER = 'shopnova'
+        PROD_PORT = '30070'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -29,9 +39,13 @@ pipeline {
             steps {
                 sh '''
                     set -e
+
                     rm -rf .jenkins-venv
+
                     python3 -m venv .jenkins-venv
+
                     . .jenkins-venv/bin/activate
+
                     pip install -r requirements.txt
                 '''
             }
@@ -41,7 +55,9 @@ pipeline {
             steps {
                 sh '''
                     set -e
+
                     . .jenkins-venv/bin/activate
+
                     pytest -v
                 '''
             }
@@ -51,20 +67,31 @@ pipeline {
             steps {
                 sh '''
                     set -e
-                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                    docker image inspect ${IMAGE_NAME}:${IMAGE_TAG} >/dev/null
+
+                    docker build \
+                      -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                      .
+
+                    docker image inspect \
+                      ${IMAGE_NAME}:${IMAGE_TAG} \
+                      > /dev/null
                 '''
             }
         }
 
-        stage('Import Image to K3s') {
+        stage('Import Image to UAT K3s') {
             steps {
                 sh '''
                     set -e
+
                     rm -f ${IMAGE_ARCHIVE}
-                    docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${IMAGE_ARCHIVE}
-                    sudo -n /usr/local/bin/k3s ctr images import ${IMAGE_ARCHIVE}
-                    sudo -n /usr/local/bin/k3s ctr images list | grep ${IMAGE_NAME} | grep ${IMAGE_TAG}
+
+                    docker save \
+                      ${IMAGE_NAME}:${IMAGE_TAG} \
+                      -o ${IMAGE_ARCHIVE}
+
+                    sudo -n /usr/local/bin/k3s ctr images import \
+                      ${IMAGE_ARCHIVE}
                 '''
             }
         }
@@ -73,34 +100,140 @@ pipeline {
             steps {
                 sh '''
                     set -e
-                    kubectl -n ${KUBE_NAMESPACE} set image \
-                      deployment/${KUBE_DEPLOYMENT} \
-                      ${KUBE_CONTAINER}=docker.io/library/${IMAGE_NAME}:${IMAGE_TAG}
 
-                    kubectl -n ${KUBE_NAMESPACE} set env \
-                      deployment/${KUBE_DEPLOYMENT} \
+                    kubectl -n ${UAT_NAMESPACE} set image \
+                      deployment/${UAT_DEPLOYMENT} \
+                      ${UAT_CONTAINER}=docker.io/library/${IMAGE_NAME}:${IMAGE_TAG}
+
+                    kubectl -n ${UAT_NAMESPACE} set env \
+                      deployment/${UAT_DEPLOYMENT} \
                       APP_ENV=UAT-K8S \
                       APP_VERSION=${BUILD_NUMBER}
 
-                    kubectl -n ${KUBE_NAMESPACE} rollout status \
-                      deployment/${KUBE_DEPLOYMENT} \
+                    kubectl -n ${UAT_NAMESPACE} rollout status \
+                      deployment/${UAT_DEPLOYMENT} \
                       --timeout=300s
                 '''
             }
         }
 
-        stage('UAT Health Validation') {
+        stage('Validate UAT') {
             steps {
                 sh '''
                     set -e
+
                     sleep 5
-                    curl --fail --silent --show-error \
+
+                    echo "Checking UAT health endpoint..."
+
+                    curl --fail \
+                      --silent \
+                      --show-error \
                       http://localhost:${UAT_PORT}/health
-                    echo
-                    curl --fail --silent --show-error \
+
+                    echo ""
+
+                    echo "Checking UAT readiness endpoint..."
+
+                    curl --fail \
+                      --silent \
+                      --show-error \
                       http://localhost:${UAT_PORT}/ready
-                    echo
-                    kubectl -n ${KUBE_NAMESPACE} get deployment,pods,service
+
+                    echo ""
+
+                    kubectl -n ${UAT_NAMESPACE} \
+                      get deployment,pods,service
+                '''
+            }
+        }
+
+        stage('Approve Production Deployment') {
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    input(
+                        message: "UAT Build ${BUILD_NUMBER} is healthy. Deploy this build to Production?",
+                        ok: 'Deploy to PROD'
+                    )
+                }
+            }
+        }
+
+        stage('Verify PROD Connection') {
+            steps {
+                sh '''
+                    set -e
+
+                    ssh \
+                      -o BatchMode=yes \
+                      -o StrictHostKeyChecking=accept-new \
+                      ${PROD_USER}@${PROD_HOST} \
+                      hostname
+                '''
+            }
+        }
+
+        stage('Transfer Image to PROD') {
+            steps {
+                sh '''
+                    set -e
+
+                    scp \
+                      -o BatchMode=yes \
+                      -o StrictHostKeyChecking=accept-new \
+                      ${IMAGE_ARCHIVE} \
+                      ${PROD_USER}@${PROD_HOST}:/tmp/${IMAGE_ARCHIVE}
+                '''
+            }
+        }
+
+        stage('Deploy to Kubernetes PROD') {
+            steps {
+                sh '''
+                    set -e
+
+                    ssh \
+                      -o BatchMode=yes \
+                      -o StrictHostKeyChecking=accept-new \
+                      ${PROD_USER}@${PROD_HOST} \
+                      "sudo -n /usr/local/bin/k3s ctr images import /tmp/${IMAGE_ARCHIVE} && \
+                       sudo -n /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} set image \
+                       deployment/${PROD_DEPLOYMENT} \
+                       ${PROD_CONTAINER}=docker.io/library/${IMAGE_NAME}:${IMAGE_TAG} && \
+                       sudo -n /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} set env \
+                       deployment/${PROD_DEPLOYMENT} \
+                       APP_ENV=PROD \
+                       APP_VERSION=${BUILD_NUMBER} && \
+                       sudo -n /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} rollout status \
+                       deployment/${PROD_DEPLOYMENT} \
+                       --timeout=300s && \
+                       rm -f /tmp/${IMAGE_ARCHIVE}"
+                '''
+            }
+        }
+
+        stage('Validate PROD') {
+            steps {
+                sh '''
+                    set -e
+
+                    sleep 5
+
+                    ssh \
+                      -o BatchMode=yes \
+                      -o StrictHostKeyChecking=accept-new \
+                      ${PROD_USER}@${PROD_HOST} \
+                      "echo 'Checking PROD health endpoint...' && \
+                       curl --fail --silent --show-error \
+                       http://localhost:${PROD_PORT}/health && \
+                       echo && \
+                       echo 'Checking PROD readiness endpoint...' && \
+                       curl --fail --silent --show-error \
+                       http://localhost:${PROD_PORT}/ready && \
+                       echo && \
+                       sudo -n /usr/local/bin/k3s kubectl \
+                       -n ${PROD_NAMESPACE} \
+                       get deployment,pods,service"
                 '''
             }
         }
@@ -108,11 +241,17 @@ pipeline {
 
     post {
         success {
-            echo "ShopNova Kubernetes UAT deployment ${BUILD_NUMBER} succeeded."
+            echo "ShopNova Build ${BUILD_NUMBER} deployed successfully to UAT and PROD."
         }
+
         failure {
-            echo "ShopNova Kubernetes UAT deployment ${BUILD_NUMBER} failed."
+            echo "ShopNova Build ${BUILD_NUMBER} failed. Review the failed stage."
         }
+
+        aborted {
+            echo "ShopNova Build ${BUILD_NUMBER} was not promoted to PROD."
+        }
+
         always {
             sh 'rm -f shopnova-logistics.tar || true'
         }
