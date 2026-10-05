@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ShopNova Logistics</title>
+</head>
+<body>
+
+<h1>ShopNova Logistics Platform</h1>
+
+<p>Environment : {{ app_env }}</p>
+<p>Version : {{ app_version }}</p>
+
+<h2>Dashboard</h2>
+
+<ul>
+    <li>Total Shipments : {{ total_shipments }}</li>
+    <li>Packed : {{ packed }}</li>
+    <li>In Transit : {{ in_transit }}</li>
+    <li>Out For Delivery : {{ out_for_delivery }}</li>
+    <li>Delivered : {{ delivered }}</li>
+</ul>
+
+<h2>Shipments</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Shipment ID</th>
+        <th>Product</th>
+        <th>Warehouse</th>
+        <th>Destination</th>
+        <th>Driver</th>
+        <th>Status</th>
+    </tr>
+
+    {% for shipment in shipments %}
+    <tr>
+        <td>{{ shipment.shipment_id }}</td>
+        <td>{{ shipment.product }}</td>
+        <td>{{ shipment.warehouse }}</td>
+        <td>{{ shipment.destination }}</td>
+        <td>{{ shipment.driver }}</td>
+        <td>{{ shipment.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>
