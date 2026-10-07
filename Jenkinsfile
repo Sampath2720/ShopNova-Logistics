@@ -129,7 +129,7 @@ pipeline {
                     curl --fail \
                       --silent \
                       --show-error \
-                      http://localhost:${UAT_PORT}/health
+                      http://shopenow:${UAT_PORT}/health
 
                     echo ""
 
@@ -225,7 +225,7 @@ pipeline {
                       ${PROD_USER}@${PROD_HOST} \
                       "echo 'Checking PROD health endpoint...' && \
                        curl --fail --silent --show-error \
-                       http://localhost:${PROD_PORT}/health && \
+                       http://shopnova-prod:${PROD_PORT}/health && \
                        echo && \
                        echo 'Checking PROD readiness endpoint...' && \
                        curl --fail --silent --show-error \
