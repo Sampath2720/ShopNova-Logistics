@@ -12,7 +12,7 @@ pipeline {
         IMAGE_TAG = "${BUILD_NUMBER}"
         IMAGE_ARCHIVE = 'shopnova-logistics.tar'
 
-        KUBECONFIG = '/home/azureuser/.kube/config'
+        KUBECONFIG = '/var/jenkins_home/.kube/config'
 
         UAT_NAMESPACE = 'uat'
         UAT_DEPLOYMENT = 'shopnova-uat'
@@ -101,16 +101,16 @@ pipeline {
                 sh '''
                     set -e
 
-                    kubectl -n ${UAT_NAMESPACE} set image \
+                    /usr/local/bin/k3s kubectl -n ${UAT_NAMESPACE} set image \
                       deployment/${UAT_DEPLOYMENT} \
                       ${UAT_CONTAINER}=docker.io/library/${IMAGE_NAME}:${IMAGE_TAG}
 
-                    kubectl -n ${UAT_NAMESPACE} set env \
+                    /usr/local/bin/k3s kubectl -n ${UAT_NAMESPACE} set env \
                       deployment/${UAT_DEPLOYMENT} \
                       APP_ENV=UAT-K8S \
                       APP_VERSION=${BUILD_NUMBER}
 
-                    kubectl -n ${UAT_NAMESPACE} rollout status \
+                    /usr/local/bin/k3s kubectl -n ${UAT_NAMESPACE} rollout status \
                       deployment/${UAT_DEPLOYMENT} \
                       --timeout=300s
                 '''
@@ -142,7 +142,7 @@ pipeline {
 
                     echo ""
 
-                    kubectl -n ${UAT_NAMESPACE} \
+                    /usr/local/bin/k3s kubectl -n ${UAT_NAMESPACE} \
                       get deployment,pods,service
                 '''
             }
