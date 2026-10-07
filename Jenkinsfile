@@ -46,7 +46,7 @@ pipeline {
 
                     . .jenkins-venv/bin/activate
 
-                    pip install -r requirements.txt
+                    python -m pip install --timeout 120 --retries 10 --disable-pip-version-check -r requirements.txt
                 '''
             }
         }
