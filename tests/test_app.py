@@ -19,7 +19,9 @@ def test_dashboard():
     response = client.get("/")
 
     assert response.status_code == 200
-    assert b"ShopNova Logistics Platform" in response.data
+    assert b"ShopNova" in response.data
+    assert b"Enterprise Logistics and Shipment Management" in response.data
+    assert b"Shipment Operations" in response.data
     assert b"SHIP001" in response.data
 
 

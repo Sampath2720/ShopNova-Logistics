@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: shopnova-uat
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: shopnova
+
+  template:
+    metadata:
+      labels:
+        app: shopnova
+
+    spec:
+      containers:
+      - name: shopnova
+
+        image: docker.io/library/shopnova-logistics:v1
+
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 7070
+
+        env:
+        - name: APP_ENV
+          value: "UAT-K8S"

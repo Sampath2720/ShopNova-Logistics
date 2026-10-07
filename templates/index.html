@@ -1,48 +1,490 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>ShopNova Logistics</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f3f4f6;
+            color: #172033;
+        }
+
+        .top-header {
+            background: #131921;
+            color: #ffffff;
+            padding: 18px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .brand h1 {
+            font-size: 30px;
+            color: #ffb703;
+        }
+
+        .brand p {
+            color: #d2d8e2;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .environment-box {
+            background: #232f3e;
+            border: 1px solid #41516a;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+
+        .environment-box strong {
+            color: #ffb703;
+        }
+
+        .navigation {
+            background: #232f3e;
+            color: #ffffff;
+            padding: 12px 5%;
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .navigation a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .navigation a:hover {
+            color: #ffb703;
+        }
+
+        .hero {
+            padding: 45px 5%;
+            background: linear-gradient(120deg, #e8f2ff, #ffffff);
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .hero h2 {
+            font-size: 38px;
+            color: #131921;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            color: #536179;
+            font-size: 17px;
+            line-height: 1.6;
+            margin-bottom: 22px;
+        }
+
+        .tracking-box {
+            display: flex;
+            background: #ffffff;
+            border: 2px solid #ffb703;
+            border-radius: 9px;
+            overflow: hidden;
+            max-width: 680px;
+        }
+
+        .tracking-box input {
+            flex: 1;
+            border: none;
+            padding: 15px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .tracking-box button {
+            background: #ffb703;
+            color: #131921;
+            border: none;
+            padding: 0 25px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .hero-card {
+            background: #131921;
+            color: #ffffff;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 12px 25px rgba(19, 25, 33, 0.22);
+        }
+
+        .hero-card h3 {
+            color: #ffb703;
+            margin-bottom: 15px;
+        }
+
+        .hero-card p {
+            color: #d5dbe5;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .main-content {
+            width: 92%;
+            max-width: 1450px;
+            margin: 30px auto;
+        }
+
+        .section-heading {
+            margin-bottom: 18px;
+        }
+
+        .section-heading h2 {
+            font-size: 25px;
+            color: #131921;
+        }
+
+        .section-heading p {
+            margin-top: 6px;
+            color: #68758a;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(170px, 1fr));
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+
+        .metric-card {
+            background: #ffffff;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 5px 14px rgba(15, 23, 42, 0.08);
+            border-top: 4px solid #1464f4;
+            transition: transform 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .metric-card h3 {
+            color: #617086;
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+
+        .metric-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #172033;
+        }
+
+        .metric-card.total {
+            border-top-color: #1464f4;
+        }
+
+        .metric-card.packed {
+            border-top-color: #2693ff;
+        }
+
+        .metric-card.transit {
+            border-top-color: #f59e0b;
+        }
+
+        .metric-card.out {
+            border-top-color: #7c3aed;
+        }
+
+        .metric-card.delivered {
+            border-top-color: #16a34a;
+        }
+
+        .table-container {
+            background: #ffffff;
+            border-radius: 12px;
+            overflow-x: auto;
+            box-shadow: 0 5px 16px rgba(15, 23, 42, 0.09);
+        }
+
+        table {
+            width: 100%;
+            min-width: 900px;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #131921;
+            color: #ffffff;
+            padding: 16px 14px;
+            text-align: left;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+
+        td {
+            padding: 16px 14px;
+            border-bottom: 1px solid #e6e9ee;
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .shipment-id {
+            color: #1464f4;
+            font-weight: bold;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 999px;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .status-packed {
+            background: #2693ff;
+        }
+
+        .status-transit {
+            background: #f59e0b;
+        }
+
+        .status-out {
+            background: #7c3aed;
+        }
+
+        .status-delivered {
+            background: #16a34a;
+        }
+
+        .footer {
+            background: #131921;
+            color: #d5dbe5;
+            padding: 25px 5%;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .footer strong {
+            color: #ffb703;
+        }
+
+        @media (max-width: 1050px) {
+            .dashboard {
+                grid-template-columns: repeat(2, minmax(180px, 1fr));
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .tracking-box {
+                flex-direction: column;
+            }
+
+            .tracking-box button {
+                padding: 14px;
+            }
+
+            .hero h2 {
+                font-size: 30px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<h1>ShopNova Logistics Platform</h1>
+<header class="top-header">
+    <div class="brand">
+        <h1>ShopNova</h1>
+        <p>Enterprise Logistics and Shipment Management</p>
+    </div>
 
-<p>Environment : {{ app_env }}</p>
-<p>Version : {{ app_version }}</p>
+    <div class="environment-box">
+        Environment: <strong>{{ app_env }}</strong>
+        &nbsp;|&nbsp;
+        Release: <strong>{{ app_version }}</strong>
+    </div>
+</header>
 
-<h2>Dashboard</h2>
+<nav class="navigation">
+    /Dashboard</a>
+    /api/shipmentsShipments API</a>
+    /healthHealth</a>
+    /readyReadiness</a>
+</nav>
 
-<ul>
-    <li>Total Shipments : {{ total_shipments }}</li>
-    <li>Packed : {{ packed }}</li>
-    <li>In Transit : {{ in_transit }}</li>
-    <li>Out For Delivery : {{ out_for_delivery }}</li>
-    <li>Delivered : {{ delivered }}</li>
-</ul>
+<section class="hero">
+    <div>
+        <h2>Fast, visible and reliable delivery operations</h2>
 
-<h2>Shipments</h2>
+        <p>
+            Monitor every ShopNova shipment from fulfillment center to customer
+            delivery through one modern logistics control platform.
+        </p>
 
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Shipment ID</th>
-        <th>Product</th>
-        <th>Warehouse</th>
-        <th>Destination</th>
-        <th>Driver</th>
-        <th>Status</th>
-    </tr>
+        <div class="tracking-box">
+            <input
+                id="trackingInput"
+                type="text"
+                placeholder="Enter shipment ID, product, warehouse, destination or driver"
+                onkeyup="filterShipments()"
+            >
+            <button type="button" onclick="filterShipments()">Search</button>
+        </div>
+    </div>
 
-    {% for shipment in shipments %}
-    <tr>
-        <td>{{ shipment.shipment_id }}</td>
-        <td>{{ shipment.product }}</td>
-        <td>{{ shipment.warehouse }}</td>
-        <td>{{ shipment.destination }}</td>
-        <td>{{ shipment.driver }}</td>
-        <td>{{ shipment.status }}</td>
-    </tr>
-    {% endfor %}
-</table>
+    <div class="hero-card">
+        <h3>Live Platform Status</h3>
+        <p>Application: ShopNova Logistics</p>
+        <p>Environment: {{ app_env }}</p>
+        <p>Build Version: {{ app_version }}</p>
+        <p>Health Endpoint: /health</p>
+        <p>Readiness Endpoint: /ready</p>
+    </div>
+</section>
+
+<main class="main-content">
+
+    <div class="section-heading">
+        <h2>Logistics Overview</h2>
+        <p>Current shipment movement across the ShopNova delivery network.</p>
+    </div>
+
+    <section class="dashboard">
+        <div class="metric-card total">
+            <h3>Total Shipments</h3>
+            <div class="number">{{ total_shipments }}</div>
+        </div>
+
+        <div class="metric-card packed">
+            <h3>Packed</h3>
+            <div class="number">{{ packed }}</div>
+        </div>
+
+        <div class="metric-card transit">
+            <h3>In Transit</h3>
+            <div class="number">{{ in_transit }}</div>
+        </div>
+
+        <div class="metric-card out">
+            <h3>Out For Delivery</h3>
+            <div class="number">{{ out_for_delivery }}</div>
+        </div>
+
+        <div class="metric-card delivered">
+            <h3>Delivered</h3>
+            <div class="number">{{ delivered }}</div>
+        </div>
+    </section>
+
+    <div class="section-heading">
+        <h2>Shipment Operations</h2>
+        <p>Track fulfillment center, driver, destination and delivery status.</p>
+    </div>
+
+    <div class="table-container">
+        <table id="shipmentTable">
+            <thead>
+                <tr>
+                    <th>Shipment ID</th>
+                    <th>Product</th>
+                    <th>Warehouse</th>
+                    <th>Destination</th>
+                    <th>Driver</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for shipment in shipments %}
+                <tr>
+                    <td class="shipment-id">{{ shipment.shipment_id }}</td>
+                    <td>{{ shipment.product }}</td>
+                    <td>{{ shipment.warehouse }}</td>
+                    <td>{{ shipment.destination }}</td>
+                    <td>{{ shipment.driver }}</td>
+
+                    <td>
+                        {% if shipment.status == "Delivered" %}
+                            <span class="status status-delivered">
+                                {{ shipment.status }}
+                            </span>
+                        {% elif shipment.status == "In Transit" %}
+                            <span class="status status-transit">
+                                {{ shipment.status }}
+                            </span>
+                        {% elif shipment.status == "Packed" %}
+                            <span class="status status-packed">
+                                {{ shipment.status }}
+                            </span>
+                        {% else %}
+                            <span class="status status-out">
+                                {{ shipment.status }}
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+<footer class="footer">
+    <strong>ShopNova Logistics</strong>
+    | Kubernetes Release {{ app_version }}
+    | {{ app_env }}
+</footer>
+
+<script>
+    function filterShipments() {
+        const input = document
+            .getElementById("trackingInput")
+            .value
+            .toLowerCase();
+
+        const rows = document.querySelectorAll(
+            "#shipmentTable tbody tr"
+        );
+
+        rows.forEach(function (row) {
+            const rowText = row.textContent.toLowerCase();
+
+            if (rowText.includes(input)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+</script>
 
 </body>
 </html>
