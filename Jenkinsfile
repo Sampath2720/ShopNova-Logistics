@@ -90,7 +90,7 @@ pipeline {
                       ${IMAGE_NAME}:${IMAGE_TAG} \
                       -o ${IMAGE_ARCHIVE}
 
-                    sudo -n /usr/local/bin/k3s ctr images import \
+                    /usr/local/bin/k3s ctr images import \
                       ${IMAGE_ARCHIVE}
                 '''
             }
@@ -196,15 +196,15 @@ pipeline {
                       -o BatchMode=yes \
                       -o StrictHostKeyChecking=accept-new \
                       ${PROD_USER}@${PROD_HOST} \
-                      "sudo -n /usr/local/bin/k3s ctr images import /tmp/${IMAGE_ARCHIVE} && \
-                       sudo -n /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} set image \
+                      "/usr/local/bin/k3s ctr images import /tmp/${IMAGE_ARCHIVE} && \
+                       /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} set image \
                        deployment/${PROD_DEPLOYMENT} \
                        ${PROD_CONTAINER}=docker.io/library/${IMAGE_NAME}:${IMAGE_TAG} && \
-                       sudo -n /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} set env \
+                       /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} set env \
                        deployment/${PROD_DEPLOYMENT} \
                        APP_ENV=PROD \
                        APP_VERSION=${BUILD_NUMBER} && \
-                       sudo -n /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} rollout status \
+                       /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} rollout status \
                        deployment/${PROD_DEPLOYMENT} \
                        --timeout=300s && \
                        rm -f /tmp/${IMAGE_ARCHIVE}"
@@ -231,7 +231,7 @@ pipeline {
                        curl --fail --silent --show-error \
                        http://localhost:${PROD_PORT}/ready && \
                        echo && \
-                       sudo -n /usr/local/bin/k3s kubectl \
+                       /usr/local/bin/k3s kubectl \
                        -n ${PROD_NAMESPACE} \
                        get deployment,pods,service"
                 '''
