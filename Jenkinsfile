@@ -138,7 +138,7 @@ pipeline {
                     curl --fail \
                       --silent \
                       --show-error \
-                      http://localhost:${UAT_PORT}/ready
+                      http://shopenow:${UAT_PORT}/ready
 
                     echo ""
 
@@ -229,7 +229,7 @@ pipeline {
                        echo && \
                        echo 'Checking PROD readiness endpoint...' && \
                        curl --fail --silent --show-error \
-                       http://localhost:${PROD_PORT}/ready && \
+                       http://shopnova-prod:${PROD_PORT}/ready && \
                        echo && \
                        /usr/local/bin/k3s kubectl \
                        -n ${PROD_NAMESPACE} \
