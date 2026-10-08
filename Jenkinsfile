@@ -164,7 +164,7 @@ pipeline {
                 sh '''
                     set -e
 
-                    ssh \
+                    ssh -i /var/jenkins_home/.ssh/id_rsa \
                       -o BatchMode=yes \
                       -o StrictHostKeyChecking=accept-new \
                       ${PROD_USER}@${PROD_HOST} \
@@ -178,7 +178,7 @@ pipeline {
                 sh '''
                     set -e
 
-                    scp \
+                    scp -i /var/jenkins_home/.ssh/id_rsa \
                       -o BatchMode=yes \
                       -o StrictHostKeyChecking=accept-new \
                       ${IMAGE_ARCHIVE} \
@@ -192,7 +192,7 @@ pipeline {
                 sh '''
                     set -e
 
-                    ssh \
+                    ssh -i /var/jenkins_home/.ssh/id_rsa \
                       -o BatchMode=yes \
                       -o StrictHostKeyChecking=accept-new \
                       ${PROD_USER}@${PROD_HOST} \
@@ -219,7 +219,7 @@ pipeline {
 
                     sleep 5
 
-                    ssh \
+                    ssh -i /var/jenkins_home/.ssh/id_rsa \
                       -o BatchMode=yes \
                       -o StrictHostKeyChecking=accept-new \
                       ${PROD_USER}@${PROD_HOST} \
