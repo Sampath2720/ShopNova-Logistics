@@ -196,15 +196,15 @@ pipeline {
                       -o BatchMode=yes \
                       -o StrictHostKeyChecking=accept-new \
                       ${PROD_USER}@${PROD_HOST} \
-                      "/usr/local/bin/k3s ctr images import /tmp/${IMAGE_ARCHIVE} && \
-                       /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} set image \
+                      "sudo -n /usr/local/bin/k3s ctr images import /tmp/${IMAGE_ARCHIVE} && \
+                       sudo -n /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} set image \
                        deployment/${PROD_DEPLOYMENT} \
                        ${PROD_CONTAINER}=docker.io/library/${IMAGE_NAME}:${IMAGE_TAG} && \
-                       /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} set env \
+                       sudo -n /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} set env \
                        deployment/${PROD_DEPLOYMENT} \
                        APP_ENV=PROD \
                        APP_VERSION=${BUILD_NUMBER} && \
-                       /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} rollout status \
+                       sudo -n /usr/local/bin/k3s kubectl -n ${PROD_NAMESPACE} rollout status \
                        deployment/${PROD_DEPLOYMENT} \
                        --timeout=300s && \
                        rm -f /tmp/${IMAGE_ARCHIVE}"
@@ -231,7 +231,7 @@ pipeline {
                        curl --fail --silent --show-error \
                        http://shopnova-prod:${PROD_PORT}/ready && \
                        echo && \
-                       /usr/local/bin/k3s kubectl \
+                       sudo -n /usr/local/bin/k3s kubectl \
                        -n ${PROD_NAMESPACE} \
                        get deployment,pods,service"
                 '''
