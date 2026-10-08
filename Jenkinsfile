@@ -63,6 +63,40 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withCredentials([
+                    string(
+                        credentialsId: 'sonar-token',
+                        variable: 'SONAR_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        set -e
+
+                        . .jenkins-venv/bin/activate
+
+                        python -m pip install \
+                          --timeout 120 \
+                          --retries 10 \
+                          --disable-pip-version-check \
+                          pysonar
+
+                        rm -rf .scannerwork
+
+                        SONAR_SCHEME="http"
+                        SONAR_SERVER="shopenow:9000"
+                        SONAR_ADDRESS="${SONAR_SCHEME}://${SONAR_SERVER}"
+
+                        pysonar \
+                          --sonar-host-url="${SONAR_ADDRESS}" \
+                          --sonar-token="${SONAR_TOKEN}" \
+                          --sonar-project-key=ShopNova-Logistics
+                    '''
+                }
+            }
+        }
+
         stage('Docker Build') {
             steps {
                 sh '''
